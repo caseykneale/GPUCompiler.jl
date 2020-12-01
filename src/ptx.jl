@@ -18,13 +18,15 @@ source_code(::PTXCompilerTarget) = "ptx"
 
 llvm_triple(::PTXCompilerTarget) = Int===Int64 ? "nvptx64-nvidia-cuda" : "nvptx-nvidia-cuda"
 
-function llvm_machine(target::PTXCompilerTarget)
+function llvm_machine(target::PTXCompilerTarget, static)
     triple = llvm_triple(target)
     t = Target(triple=triple)
 
     cpu = "sm_$(target.cap.major)$(target.cap.minor)"
     feat = "+ptx60" # we only support CUDA 9.0+ and LLVM 6.0+
-    tm = TargetMachine(t, triple, cpu, feat)
+    optlevel = LLVM.API.LLVMCodeGenLevelDefault
+    reloc = static ? LLVM.API.LLVMRelocPIC : LLVM.API.LLVMRelocDefault
+    tm = TargetMachine(t, triple, cpu, feat, optlevel, reloc)
     asm_verbosity!(tm, true)
 
     return tm
@@ -127,7 +129,7 @@ function add_lowering_passes!(job::CompilerJob{PTXCompilerTarget}, pm::LLVM.Pass
 end
 
 function optimize_module!(job::CompilerJob{PTXCompilerTarget}, mod::LLVM.Module)
-    tm = llvm_machine(job.target)
+    tm = llvm_machine(job.target, job.source.static)
     ModulePassManager() do pm
         add_library_info!(pm, triple(mod))
         add_transform_info!(pm, tm)

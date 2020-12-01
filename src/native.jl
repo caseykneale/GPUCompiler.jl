@@ -11,12 +11,14 @@ end
 
 llvm_triple(::NativeCompilerTarget) = Sys.MACHINE
 
-function llvm_machine(target::NativeCompilerTarget)
+function llvm_machine(target::NativeCompilerTarget, static)
     triple = llvm_triple(target)
 
     t = Target(triple=triple)
 
-    tm = TargetMachine(t, triple, target.cpu, target.features)
+    optlevel = LLVM.API.LLVMCodeGenLevelDefault
+    reloc = static ? LLVM.API.LLVMRelocPIC : LLVM.API.LLVMRelocDefault
+    tm = TargetMachine(t, triple, target.cpu, target.features, optlevel, reloc)
     asm_verbosity!(tm, true)
 
     return tm

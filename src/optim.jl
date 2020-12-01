@@ -1,7 +1,7 @@
 # LLVM IR optimization
 
 function optimize!(@nospecialize(job::CompilerJob), mod::LLVM.Module)
-    tm = llvm_machine(job.target)
+    tm = llvm_machine(job.target, job.source.static)
 
     function initialize!(pm)
         add_library_info!(pm, triple(mod))

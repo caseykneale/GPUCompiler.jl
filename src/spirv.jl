@@ -18,7 +18,7 @@ end
 llvm_triple(::SPIRVCompilerTarget) = Int===Int64 ? "spir64-unknown-unknown" : "spirv-unknown-unknown"
 
 # SPIRV is not supported by our LLVM builds, so we can't get a target machine
-llvm_machine(::SPIRVCompilerTarget) = nothing
+llvm_machine(::SPIRVCompilerTarget, static) = nothing
 
 llvm_datalayout(::SPIRVCompilerTarget) = Int===Int64 ?
     "e-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024" :

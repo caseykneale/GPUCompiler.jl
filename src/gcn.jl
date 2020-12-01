@@ -10,7 +10,7 @@ end
 
 llvm_triple(::GCNCompilerTarget) = "amdgcn-amd-amdhsa"
 
-function llvm_machine(target::GCNCompilerTarget)
+function llvm_machine(target::GCNCompilerTarget, static)
     triple = llvm_triple(target)
     t = Target(triple=triple)
 
@@ -65,7 +65,7 @@ function optimize_module!(job::CompilerJob{GCNCompilerTarget}, mod::LLVM.Module)
     triple!(mod, llvm_triple(job.target))
     datalayout!(mod, llvm_datalayout(job.target))
 
-    tm = llvm_machine(job.target)
+    tm = llvm_machine(job.target, job.source.static)
     ModulePassManager() do pm
         add_library_info!(pm, triple(mod))
         add_transform_info!(pm, tm)

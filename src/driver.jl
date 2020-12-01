@@ -38,7 +38,8 @@ function compile(target::Symbol, @nospecialize(job::CompilerJob);
 
     return codegen(target, job;
                    libraries=libraries, deferred_codegen=deferred_codegen,
-                   optimize=optimize, strip=strip, validate=validate, only_entry=only_entry)
+                   optimize=optimize, strip=strip, validate=validate,
+                   only_entry=only_entry)
 end
 
 # primitive mechanism for deferred compilation, for implementing CUDA dynamic parallelism.

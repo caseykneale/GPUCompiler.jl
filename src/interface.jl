@@ -23,18 +23,19 @@ source_code(::AbstractCompilerTarget) = "text"
 
 llvm_triple(::AbstractCompilerTarget) = error("Not implemented")
 
-function llvm_machine(target::AbstractCompilerTarget)
+function llvm_machine(target::AbstractCompilerTarget, static)
     triple = llvm_triple(target)
 
     t = Target(triple=triple)
 
-    tm = TargetMachine(t, triple)
+    reloc = static ? LLVM.API.LLVMRelocPIC : LLVM.API.LLVMRelocDefault
+    tm = TargetMachine(t, triple, "", "", LLVM.API.LLVMCodeGenLevelDefault, reloc)
     asm_verbosity!(tm, true)
 
     return tm
 end
 
-llvm_datalayout(target::AbstractCompilerTarget) = DataLayout(llvm_machine(target))
+llvm_datalayout(target::AbstractCompilerTarget) = DataLayout(llvm_machine(target, false))
 
 
 ## params
@@ -57,12 +58,13 @@ struct FunctionSpec{F,TT}
     tt::DataType
     kernel::Bool
     name::Union{Nothing,String}
+    static::Bool
 end
 
 # put the function and argument types in typevars
 # so that we can access it from generated functions
-FunctionSpec(f, tt=Tuple{}, kernel=true, name=nothing) =
-    FunctionSpec{typeof(f),tt}(f, tt, kernel, name)
+FunctionSpec(f, tt=Tuple{}, kernel=true, name=nothing, static=false) =
+    FunctionSpec{typeof(f),tt}(f, tt, kernel, name, static)
 
 function signature(spec::FunctionSpec)
     fn = something(spec.name, nameof(spec.f))
