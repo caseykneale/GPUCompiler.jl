@@ -1,16 +1,18 @@
 using GPUCompiler
 
-include("test/definitions/native.jl")
+include("test/definitions/ptx.jl")
 
-original() = 0
+const val = Ref{Int}()
 
-kernel() = original()
+original() = val[] = 1
 
-replaced() = 42
+kernel() = (original(); nothing)
+
+replaced() = val[] = 2
 GPUCompiler.@override GPUCompiler.GLOBAL_CI_CACHE original() replaced
 
 function main()
-    native_code_llvm(kernel, Tuple{}; debuginfo=:none)
+    ptx_code_llvm(kernel, Tuple{}; debuginfo=:none)
 end
 
 isinteractive() || main()
